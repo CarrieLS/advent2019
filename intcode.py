@@ -30,4 +30,3 @@ def interpret(code):
         #move to next step - jump 4 positions ahead
         curpos += 4
         curval = code[curpos]
-            
