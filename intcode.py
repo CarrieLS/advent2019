@@ -25,7 +25,7 @@ def interpret(code):
                 code[pos_c] = code[pos_a] + code[pos_b] #ADD
             elif curval == 2:
                 code[pos_c] = code[pos_a]*code[pos_b] #MULT
-        elif curval != 99: #invalid operator!
+        else: #invalid operator!
             raise ValueError(f"intcode: invalid op! {curval} at pos {curpos}")
         #move to next step - jump 4 positions ahead
         curpos += 4
