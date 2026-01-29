@@ -12,17 +12,23 @@
 #parameter counts for each operator
 #key = operator, val = param count
 
+#problem 7 needs the ability to await input
+#Interpreter now pauses itself if it can't get input
+#can be restarted by calling resume()
+
 #problem 5 needs support for i/o
 #so adding a terminal
 #if no terminal exists, i/o will be handled via python's input/print
 #for automatic i/o, here's a terminal class:
 class Terminal:
-    def __init__(self,input_list):
+    def __init__(self,input_list = []):
         self.input_stack = input_list.copy()
         self.input_stack.reverse() #so we can pop inputs off
         self.output = []
     
     def next_input(self):
+        if len(self.input_stack) == 0:
+            return None #no inputs left, interpreter will wait
         return self.input_stack.pop()
     
     def write_output(self,out):
@@ -58,6 +64,7 @@ class Interpreter:
                              7: self._less_than,
                              8: self._equals}
         self.terminal = terminal
+        self.status = 1 #0: running, 1: paused, 2: finished
     
     #perform next operator, recurse until op = 99
     def step(self):
@@ -65,11 +72,19 @@ class Interpreter:
         op = cur_val % 100
         #check if halt
         if op == 99:
+            self.status = 2
             return
         pflags = cur_val//100
         #do operator
         self.operator_map[op](pflags)
-        #next step
+        #next step if not paused
+        if self.status == 0:
+            self.step()
+    
+    #restart if interpreter was previously paused, should try running
+    #whatever it paused on again
+    def resume(self):
+        self.status = 0
         self.step()
     
     #1
@@ -103,9 +118,13 @@ class Interpreter:
     #3
     def _input(self,param_flags):
         target_i = self.code[self.pointer+1]
-        self.code[target_i] = self.terminal.next_input()
-        self.pointer += 2
-    
+        next_input = self.terminal.next_input()
+        if next_input == None: #enter waiting mode, don't do anything else
+            self.status = 1
+        else:
+            self.code[target_i] = next_input
+            self.pointer += 2
+
     #4
     def _output(self,param_flags):
         val = None
@@ -189,4 +208,4 @@ class Interpreter:
 #quickly make and use an interpreter w/ given terminal
 def interpret(code, terminal = default_terminal):
     interpreter = Interpreter(code, terminal)
-    interpreter.step()
+    interpreter.resume()
