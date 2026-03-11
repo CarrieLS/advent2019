@@ -25,7 +25,7 @@ class ICInterpreter:
     def __init__(self,console,program):
         self.console = console
         self.pointer = 0 #where we currently are in the code
-        self.status = 1 #1 for paused, 0 for running
+        self.status = 1 #1 for paused, 0 for running, 2 for finished
         #code uses a dict now for flexible memory usage
         self.program = dict(enumerate(program))
         self.rel_base = 0
@@ -52,7 +52,7 @@ class ICInterpreter:
         nextOp = ICOperator(self, opcode)
         pointOffset = nextOp.execute()
         self.pointer += pointOffset
-        if self.status == 1:
+        if self.status == 2:
             print("HALTED")
         
     
@@ -143,7 +143,7 @@ class ICOperator:
         return 2
     
     def halt(interpreter,params):
-        interpreter.status = 1
+        interpreter.status = 2
         return 0
         
         
